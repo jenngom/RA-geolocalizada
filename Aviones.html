@@ -32,16 +32,19 @@
         function startDetection() {
             const video = document.createElement('video');
             document.body.append(video);
-            video.width = 640;
-            video.height = 480;
+            video.width = 640; // Aumenta la resolución
+            video.height = 480; // Aumenta la resolución
             
             // Obtener video de la cámara
-            navigator.mediaDevices.getUserMedia({ video: {} }).then(function (stream) {
+            navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then(function (stream) {
                 video.srcObject = stream;
                 video.play();
 
                 // Iniciar el loop de detección de manos
                 detectHands(video);
+            }).catch(err => {
+                console.error('Error al acceder a la cámara:', err);
+                alert('No se puede acceder a la cámara.');
             });
         }
 
@@ -58,6 +61,8 @@
 
                     // Mostrar las coordenadas en la escena 3D
                     coordinatesText.setAttribute('value', `Coordenadas de la mano: X: ${x}, Y: ${y}`);
+                } else {
+                    coordinatesText.setAttribute('value', 'No se detectó ninguna mano');
                 }
                 
                 // Continuar el ciclo de detección
