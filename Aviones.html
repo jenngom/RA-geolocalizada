@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RA Geolocalizada - Avión en el Aeropuerto</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+
+    <!-- Escena de A-Frame -->
+    <a-scene 
+        vr-mode-ui="enabled: false" 
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false;">
+        
+        <!-- Cámara habilitada para GPS -->
+        <a-camera gps-camera="minAccuracy: 50;"></a-camera>
+        
+        <!-- Contenedor para el modelo del avión -->
+        <a-entity 
+            id="airplane" 
+            gltf-model="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Airplane/glTF/Airplane.gltf"
+            scale="10 10 10" 
+            rotation="0 180 0" 
+            visible="false">
+        </a-entity>
+    </a-scene>
+
+    <script>
+        // Verificar compatibilidad de geolocalización
+        if ('geolocation' in navigator) {
+            // Obtener ubicación actual
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    // Mostrar las coordenadas en la consola
+                    console.log('Ubicación actual:', latitude, longitude);
+
+                    // Configurar la posición del avión con las coordenadas actuales
+                    const airplane = document.getElementById('airplane');
+                    airplane.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+                    airplane.setAttribute('visible', 'true'); // Mostrar el modelo
+                },
+                (error) => {
+                    console.error('Error obteniendo geolocalización:', error);
+                    alert('No se pudo obtener tu ubicación. Asegúrate de habilitar la geolocalización.');
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            console.error('Geolocalización no soportada en este navegador.');
+            alert('Tu navegador no soporta geolocalización.');
+        }
+    </script>
+</body>
+</html>
