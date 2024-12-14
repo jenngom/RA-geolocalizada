@@ -3,72 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Geolocalizada - Detección de Manos</title>
-    <script src="https://cdn.jsdelivr.net/npm/handtrackjs@0.0.3/dist/handtrack.min.js"></script> <!-- Incluir handtrack.js -->
+    <title>RA Geolocalizada - Avión en el Aeropuerto</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
 </head>
 <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
-        <!-- Cámara y escenas de AR -->
+
+    <!-- Escena de A-Frame -->
+    <a-scene 
+        vr-mode-ui="enabled: false" 
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false;">
+        
+        <!-- Cámara habilitada para GPS -->
         <a-camera gps-camera="minAccuracy: 50;"></a-camera>
         
-        <!-- Elemento de texto para mostrar coordenadas -->
-        <a-text id="coordinatesText" value="Coordenadas: No detectado" position="0 2 -5" scale="3 3 3"></a-text>
+        <!-- Contenedor para el modelo del avión -->
+        <a-entity 
+            id="airplane" 
+            gltf-model="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Airplane/glTF/Airplane.gltf"
+            scale="10 10 10" 
+            rotation="0 180 0" 
+            visible="false">
+        </a-entity>
+
+        <!-- Texto que muestra las coordenadas GPS -->
+        <a-text id="coordinates" 
+                value="Coordenadas: No disponibles"
+                position="0 1.5 -3" 
+                color="#000"
+                scale="2 2 2"></a-text>
     </a-scene>
 
     <script>
-        let model = null;
-        const coordinatesText = document.getElementById('coordinatesText');
+        // Verificar compatibilidad de geolocalización
+        if ('geolocation' in navigator) {
+            // Obtener ubicación actual
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
 
-        // Cargar el modelo de detección de manos
-        handTrack.load().then(function (loadedModel) {
-            model = loadedModel;
-            console.log('Modelo de detección de manos cargado');
-            startDetection();
-        });
+                    // Mostrar las coordenadas en el elemento de texto
+                    const coordinatesText = document.getElementById('coordinates');
+                    coordinatesText.setAttribute('value', `Coordenadas: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
 
-        // Iniciar la detección de manos
-        function startDetection() {
-            const video = document.createElement('video');
-            document.body.append(video);
-            video.width = 640; // Aumenta la resolución
-            video.height = 480; // Aumenta la resolución
-            
-            // Obtener video de la cámara
-            navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then(function (stream) {
-                video.srcObject = stream;
-                video.play();
-
-                // Iniciar el loop de detección de manos
-                detectHands(video);
-            }).catch(err => {
-                console.error('Error al acceder a la cámara:', err);
-                alert('No se puede acceder a la cámara.');
-            });
-        }
-
-        // Detectar las manos y actualizar coordenadas
-        function detectHands(video) {
-            model.detect(video).then(function (predictions) {
-                // Si se detecta una mano, mostrar las coordenadas de la mano
-                if (predictions.length > 0) {
-                    const hand = predictions[0]; // Tomamos la primera mano detectada
-                    const x = hand.bbox[0] + hand.bbox[2] / 2; // Coordenada X central de la mano
-                    const y = hand.bbox[1] + hand.bbox[3] / 2; // Coordenada Y central de la mano
-
-                    console.log(`Mano detectada en: X: ${x}, Y: ${y}`);
-
-                    // Mostrar las coordenadas en la escena 3D
-                    coordinatesText.setAttribute('value', `Coordenadas de la mano: X: ${x}, Y: ${y}`);
-                } else {
-                    coordinatesText.setAttribute('value', 'No se detectó ninguna mano');
-                }
-                
-                // Continuar el ciclo de detección
-                requestAnimationFrame(() => detectHands(video));
-            });
+                    // Configurar la posición del avión con las coordenadas actuales
+                    const airplane = document.getElementById('airplane');
+                    airplane.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+                    airplane.setAttribute('visible', 'true'); // Mostrar el modelo
+                },
+                (error) => {
+                    console.error('Error obteniendo geolocalización:', error);
+                    alert('No se pudo obtener tu ubicación. Asegúrate de habilitar la geolocalización.');
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            console.error('Geolocalización no soportada en este navegador.');
+            alert('Tu navegador no soporta geolocalización.');
         }
     </script>
+
 </body>
 </html>
