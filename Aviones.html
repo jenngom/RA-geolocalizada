@@ -9,28 +9,24 @@
 </head>
 <body style="margin: 0; overflow: hidden;">
 
-    <!-- Escena de A-Frame -->
+    <!-- Escena de A-Frame para Realidad Aumentada -->
     <a-scene 
         vr-mode-ui="enabled: false" 
         embedded 
         arjs="sourceType: webcam; debugUIEnabled: false;">
-        
+
         <!-- Cámara habilitada para GPS -->
         <a-camera gps-camera="minAccuracy: 50;"></a-camera>
-        
-        <!-- Contenedor para el modelo del avión -->
+
+        <!-- Contenedor para el modelo del avión, ajustado a una escala más visible -->
         <a-entity 
             id="airplane" 
             gltf-model="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Airplane/glTF/Airplane.gltf"
-            scale="2 2 2" 
+            scale="10 10 10" 
             rotation="0 180 0" 
-            position="0 0 -2" 
-            visible="true">
+            visible="false"
+            gps-entity-place="latitude: 19.4326; longitude: -99.1332; altitude: 50;">
         </a-entity>
-
-        <!-- Cubo de referencia (para probar si el modelo se coloca correctamente) -->
-        <a-box position="0 1.5 -3" color="red" visible="true"></a-box>
-
     </a-scene>
 
     <script>
@@ -61,6 +57,5 @@
             alert('Tu navegador no soporta geolocalización.');
         }
     </script>
-
 </body>
 </html>
