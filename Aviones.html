@@ -36,29 +36,32 @@
     </a-scene>
 
     <script>
+        let airplane = document.getElementById('airplane');
+        let coordinatesText = document.getElementById('coordinates');
+
+        // Función para actualizar las coordenadas
+        function updateCoordinates(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            // Mostrar las coordenadas en el elemento de texto
+            coordinatesText.setAttribute('value', `Coordenadas: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+
+            // Configurar la posición del avión con las coordenadas actuales
+            airplane.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
+            airplane.setAttribute('visible', 'true'); // Mostrar el modelo
+        }
+
+        // Función para manejar errores de geolocalización
+        function handleGeolocationError(error) {
+            console.error('Error obteniendo geolocalización:', error);
+            alert('No se pudo obtener tu ubicación. Asegúrate de habilitar la geolocalización.');
+        }
+
         // Verificar compatibilidad de geolocalización
         if ('geolocation' in navigator) {
-            // Obtener ubicación actual
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
-
-                    // Mostrar las coordenadas en el elemento de texto
-                    const coordinatesText = document.getElementById('coordinates');
-                    coordinatesText.setAttribute('value', `Coordenadas: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-
-                    // Configurar la posición del avión con las coordenadas actuales
-                    const airplane = document.getElementById('airplane');
-                    airplane.setAttribute('gps-entity-place', `latitude: ${latitude}; longitude: ${longitude};`);
-                    airplane.setAttribute('visible', 'true'); // Mostrar el modelo
-                },
-                (error) => {
-                    console.error('Error obteniendo geolocalización:', error);
-                    alert('No se pudo obtener tu ubicación. Asegúrate de habilitar la geolocalización.');
-                },
-                { enableHighAccuracy: true }
-            );
+            // Obtener ubicación continuamente
+            navigator.geolocation.watchPosition(updateCoordinates, handleGeolocationError, { enableHighAccuracy: true });
         } else {
             console.error('Geolocalización no soportada en este navegador.');
             alert('Tu navegador no soporta geolocalización.');
